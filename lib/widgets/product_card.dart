@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_diprovet/models/models.dart';
 
 
 
 class ProductCard extends StatelessWidget {
+
+  final Product product;
+
+  const ProductCard({
+    Key? key, 
+    required this.product
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -17,25 +25,30 @@ class ProductCard extends StatelessWidget {
           alignment: Alignment.bottomLeft,
           children: [
 
-            _BackgroundImage(),
+            _BackgroundImage(product.picture),
 
-            _ProductDetails(),
+            _ProductDetails(
+              title: product.name,
+              subtitle: product.id!,
+            ),
 
             Positioned(
               top: 0,
               right: 0,
-              child: _PriceTag()
+              child: _PriceTag(
+                product.price
+              )
             ),
 
 
             //mostrar de manera condicional 
 
+            if(!product.available)
             Positioned(
               top: 0,
               left: 0,
               child: _NotAvailable()
             ),
-
 
             
           ],
@@ -86,6 +99,10 @@ class _NotAvailable extends StatelessWidget {
 }
 
 class _PriceTag extends StatelessWidget {
+  
+  final double price;
+
+  const _PriceTag( this.price );
 
 
   @override
@@ -95,7 +112,7 @@ class _PriceTag extends StatelessWidget {
         fit: BoxFit.contain,
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 10),
-          child: Text('\$200.99', style: TextStyle(color: Colors.white, fontSize: 20))
+          child: Text('\$$price', style: TextStyle(color: Colors.white, fontSize: 20))
         ),
       ),
       width: 100,
@@ -111,6 +128,14 @@ class _PriceTag extends StatelessWidget {
 
 class _ProductDetails extends StatelessWidget {
 
+  final String title;
+  final String subtitle;
+
+  const _ProductDetails({
+    required this.title, 
+    required this.subtitle
+    });
+
 
   @override
   Widget build(BuildContext context) {
@@ -125,14 +150,14 @@ class _ProductDetails extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Disco Duro G', 
+              title, 
               style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
 
             Text(
-              'Id del disco duro ', 
+              subtitle, 
               style: TextStyle(fontSize: 15, color: Colors.white),
               
             )
@@ -151,6 +176,10 @@ class _ProductDetails extends StatelessWidget {
 
 class _BackgroundImage extends StatelessWidget {
 
+  final String? url;
+
+  const _BackgroundImage(this.url);
+
 
   @override
   Widget build(BuildContext context) {
@@ -159,9 +188,15 @@ class _BackgroundImage extends StatelessWidget {
       child: Container(
         width: double.infinity,
         height: 400,
-        child: FadeInImage(
+        child: url == null
+        ? Image(
+          image: AssetImage('assets/no-image.png'),
+          fit: BoxFit.cover,
+        )
+        :FadeInImage(
+          
           placeholder: AssetImage('assets/jar-loading.gif'), 
-          image: NetworkImage('https://via.placeholder.com/400x300/f6f6f6'),
+          image: NetworkImage(url!),
           fit: BoxFit.cover,
         ),
       ),

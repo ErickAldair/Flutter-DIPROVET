@@ -1,6 +1,14 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+
+import 'package:flutter_diprovet/providers/product_form_provider.dart';
+import 'package:provider/provider.dart';
+
+import 'package:flutter_diprovet/services/services.dart';
+
 import 'package:flutter_diprovet/ui/input_decorations.dart';
 import 'package:flutter_diprovet/widgets/widgets.dart';
 
@@ -9,13 +17,38 @@ class ProductScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final productService = Provider.of<ProductsService>(context);
+    
+    return ChangeNotifierProvider(
+      create: (_) => ProductFormProvider(productService.selectedProduct),
+      child: _ProductsScreenBody(productService: productService),
+    );
+    
+  }
+}
+
+class _ProductsScreenBody extends StatelessWidget {
+  const _ProductsScreenBody({
+    Key? key,
+    required this.productService,
+  }) : super(key: key);
+
+  final ProductsService productService;
+
+  @override
+  Widget build(BuildContext context) {
+
+    final productForm = Provider.of<ProductFormProvider>(context);
+
     return Scaffold(
       body: SingleChildScrollView(
+        //keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         child: Column(
           children: [
             Stack(
               children: [
-                ProductImage(),
+                ProductImage(url: productService.selectedProduct.picture),
                 Positioned(
                   top: 60,
                   left: 20,
@@ -29,10 +62,27 @@ class ProductScreen extends StatelessWidget {
                   top: 60,
                   right: 20,
                   child: IconButton(
-                    onPressed: () {
+                    onPressed: () async{
                       //camara o galeria
+
+                      final picker = new ImagePicker();
+                      final XFile? pickedFile = await picker.pickImage(
+                        source: ImageSource.camera,
+                        imageQuality: 100
+                      );
+
+                      if(pickedFile == null){
+                        print('No selecciono nada');
+                        return;
+                      }
+
+                      
+                      productService.updateSelectedProductImage(pickedFile.path);
+
                     },
+
                     icon: Icon(Icons.camera_alt_outlined, size: 40, color: Colors.white),
+
                   )
                 )
               ],
@@ -43,22 +93,36 @@ class ProductScreen extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      //floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.save_outlined),
-        onPressed: (){
+        child: productService.isSaving
+        ? CircularProgressIndicator(color: Colors.white)
+        : Icon(Icons.save_outlined),
+        onPressed: productService.isSaving
+        ? null
+        : () async {
           //guardar Porducto
+          if(!productForm.isValidForm()) return;
+
+          final  String? imageUrl = await productService.uploadImage();
+          
+          if( imageUrl !=null ) productForm.product.picture = imageUrl;
+          
+          await productService.saveOrCreateProduct(productForm.product);
         },
       ),
    );
   }
 }
 
-class _ProductForm extends StatelessWidget {
-  
+class _ProductForm extends StatelessWidget { 
 
   @override
   Widget build(BuildContext context) {
+
+     final productForm = Provider.of<ProductFormProvider>(context);
+     final product = productForm.product;
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10),
       child: Container(
@@ -66,12 +130,20 @@ class _ProductForm extends StatelessWidget {
         width: double.infinity,
         decoration: _buildBoxDecoration(),
         child: Form(
+          key: productForm.formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             children: [
 
               SizedBox(height: 10),
 
               TextFormField(
+                initialValue: product.name,
+                onChanged: (value) => product.name = value,
+                validator: (value) {
+                  if( value == null || value.length < 1)
+                  return 'El nombre es obligatorio';
+                },
                 decoration: InputDecorations.authInputDecoration(
                   hintText: 'Nombre del Producto', 
                   labelText: 'Nombre'
@@ -81,6 +153,17 @@ class _ProductForm extends StatelessWidget {
               SizedBox(height: 10),
 
               TextFormField(
+                initialValue: '${product.price}',
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^(\d+)?\.?\d{0,2}'))
+                ],
+                onChanged: (value) {
+                  if(double.tryParse(value) == null){
+                    product.price = 0;
+                  }else{
+                    product.price = double.parse(value);
+                  }
+                },
                 keyboardType: TextInputType.number,
                 decoration: InputDecorations.authInputDecoration(
                   hintText: '\$150', 
@@ -91,12 +174,10 @@ class _ProductForm extends StatelessWidget {
               SizedBox(height: 30),
 
               SwitchListTile.adaptive(
-                value: true, 
+                value: product.available, 
                 title: Text('Disponible'),
                 activeColor: Colors.indigo,
-                onChanged: (value){
-                  //pendiente
-                }
+                onChanged: (value) => productForm.updateAvailable(value)
               ),
 
               SizedBox(height: 30)
