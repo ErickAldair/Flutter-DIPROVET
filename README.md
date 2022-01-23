@@ -1,16 +1,29 @@
-# flutter_diprovet
+# Flutter-Diprovet
 
-A new Flutter project.
+A new Flutter project with Flutter, Provider as a state manager.
 
-## Getting Started
+# Screens
 
-This project is a starting point for a Flutter application.
+<p>
+<img src="https://i.ibb.co/ZxBd7B0/Screenshot-1628808399.png" width="250" height="500">
+<img src="https://i.ibb.co/RQBYZT6/Screenshot-1628808405.png" width="250" height="500">  
+</p>
 
-A few resources to get you started if this is your first Flutter project:
+ 
+- <h2>New Card - Screen</h2>
+<img src="https://i.ibb.co/zVPYWQx/Screenshot-1642951499.png" width="250" height="500">
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+- <h2>Payment process</h2>
+<p>
+<img src="https://i.ibb.co/RGwKWqL/Screenshot-1642951506.png" width="250" height="500">
+<img src="https://i.ibb.co/3dGWGyJ/Screenshot-1642951511.png" width="250" height="500">
+<img src="https://i.ibb.co/b1r9qc6/Screenshot-1642951515.png" width="250" height="500">  
+</p>
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# Get packages
+
+- flutter pub get
+
+# Run app
+
+- flutter run
